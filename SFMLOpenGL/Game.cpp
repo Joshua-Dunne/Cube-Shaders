@@ -163,14 +163,8 @@ void Game::initialize()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	/* Vertex Shader which would normally be loaded from an external file */
-	const char* vs_src = "#version 400\n\r"
-		"in vec4 sv_position;"
-		"in vec4 sv_color;"
-		"out vec4 color;"
-		"void main() {"
-		"	color = sv_color;"
-		"	gl_Position = sv_position;"
-		"}"; //Vertex Shader Src
+	std::string vsshader = readShader(std::string("vsshader.txt"));
+	const char* vs_src = &vsshader[0]; //Vertex Shader Src
 
 	DEBUG_MSG("Setting Up Vertex Shader");
 
@@ -191,12 +185,8 @@ void Game::initialize()
 	}
 
 	/* Fragment Shader which would normally be loaded from an external file */
-	const char* fs_src = "#version 400\n\r"
-		"in vec4 color;"
-		"out vec4 fColor;"
-		"void main() {"
-		"	fColor = color + vec4(0.0f, 1.0f, 0.0f, 1.0f);"
-		"}"; //Fragment Shader Src
+	std::string fsshader = readShader(std::string("fsshader.txt"));
+	const char* fs_src = &fsshader[0]; //Fragment Shader Src
 
 	DEBUG_MSG("Setting Up Fragment Shader");
 
@@ -308,7 +298,7 @@ void Game::update()
 		for (int index = 0; index < 8; index++)
 		{
 			Vector3 p{ vertex[index].coordinate[0], vertex[index].coordinate[1], vertex[index].coordinate[2] };
-			p = Matrix3().Scale(100.1, 100.1) * p;
+			p = Matrix3().Scale3D(100.1) * p;
 
 			vertex[index].coordinate[0] = p.getX();
 			vertex[index].coordinate[1] = p.getY();
@@ -323,7 +313,7 @@ void Game::update()
 		for (int index = 0; index < 8; index++)
 		{
 			Vector3 p{ vertex[index].coordinate[0], vertex[index].coordinate[1], vertex[index].coordinate[2] };
-			p = Matrix3().Scale(99.9, 99.9) * p;
+			p = Matrix3().Scale3D(99.9 ) * p;
 
 			vertex[index].coordinate[0] = p.getX();
 			vertex[index].coordinate[1] = p.getY();
@@ -414,7 +404,7 @@ void Game::render()
 	// Set pointers for each parameter
 	// https://www.opengl.org/sdk/docs/man4/html/glVertexAttribPointer.xhtml
 	glVertexAttribPointer(positionID, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-	glVertexAttribPointer(colorID, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (float*)NULL+3);
+	glVertexAttribPointer(colorID, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (float*)NULL+8);
 
 	//Enable Arrays
 	glEnableVertexAttribArray(positionID);
@@ -433,5 +423,23 @@ void Game::unload()
 #endif
 	glDeleteProgram(progID);
 	glDeleteBuffers(1, &vbo);
+}
+
+std::string Game::readShader(std::string t_fileName)
+{
+	std::string line;
+	std::ifstream readFromFile(t_fileName);
+	std::string fileContents;
+
+	if (readFromFile.is_open())
+	{
+		while (std::getline(readFromFile, line)) // while there's lines to go through
+		{
+			fileContents += line;
+		}
+	}
+
+	readFromFile.close();
+	return fileContents;
 }
 
